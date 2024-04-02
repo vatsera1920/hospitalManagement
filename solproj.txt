@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Hospital {
+    // Define a struct to represent a bed reservation
+    struct Reservation {
+        address patientAddress; // Patient's Ethereum address
+        uint bedNumber; // Bed number
+        uint timestamp; // Timestamp of reservation
+    }
+
+    // Define mappings to store bed reservations
+    mapping(uint => Reservation) public bedReservations;
+    mapping(address => bool) public isPatientRegistered;
+
+    // Event to emit when a bed reservation is made
+    event BedReserved(address indexed patient, uint bedNumber, uint timestamp);
+
+    // Function to reserve a bed
+    function reserveBed(uint bedNumber) public {
+        // Check if bed is available
+        require(bedReservations[bedNumber].patientAddress == address(0), "Bed already reserved");
+
+        // Check if patient is registered
+        require(isPatientRegistered[msg.sender], "Patient not registered");
+
+        // Create a new reservation
+        Reservation memory newReservation = Reservation({
+            patientAddress: msg.sender,
+            bedNumber: bedNumber,
+            timestamp: block.timestamp
+        });
+
+        // Store the reservation in the mapping
+        bedReservations[bedNumber] = newReservation;
+
+        // Emit an event
+        emit BedReserved(msg.sender, bedNumber, block.timestamp);
+    }
+
+    // Function to register a patient
+    function registerPatient() public {
+        isPatientRegistered[msg.sender] = true;
+    }
+}
